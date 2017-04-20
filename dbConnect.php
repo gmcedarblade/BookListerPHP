@@ -10,6 +10,8 @@ try {
     
 } catch (Exception $ex) {
 
+    $closeSelect = false;
+
     $error = "Unable to connect to database: " . $ex->getMessage();
     
     exit();
