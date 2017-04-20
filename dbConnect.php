@@ -1,0 +1,17 @@
+<?php
+
+try {
+    // create a new instance of PDO
+    $pdo = new PDO('mysql:host=localhost:3306;dbname=webbooks', 'bookListerUser', 'myPassword');
+    
+    $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+    
+    $pdo->exec('SET NAMES "utf8"');
+    
+} catch (Exception $ex) {
+
+    $error = "Unable to connect to database: " . $ex->getMessage();
+    
+    exit();
+    
+}
