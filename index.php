@@ -34,9 +34,29 @@ and open the template in the editor.
                 }
             }
 
+            function doesRecordExist($column, $table, $value) {
+
+                require 'dbConnect.php';
+
+                try {
+
+                    $sql = "SELECT COUNT(*) FROM $table WHERE $column = '$value'";
+
+                    return $pdo->query($sql)->fetchColumn();
+
+                } catch (Exception $ex) {
+
+                    $error = "Could not check existing: " . $ex->getMessage();
+                    include 'error.html.php';;
+                    exit();
+
+                }
+
+            }
+
             if(isset($_GET['clicked'])){
             ?>
-            <form action="<?=$_SERVER[PHP_SELF]?>" method="post">
+            <form action="<?=$_SERVER['PHP_SELF']?>" method="post">
                 <label id="bookArea" for="newBookTitle">Enter the book's title</label>
                 <br><br>
                 <textarea name="newBookTitle" id="newBookTitle" rows="10" cols="40">Enter book title</textarea>
@@ -73,6 +93,63 @@ and open the template in the editor.
                  * TODO: Later we will check to see if the user submitted a book. if so
                  * we will validate the user's input and submit the book to the database
                  */
+
+                //IF the user submitted a book, check the title.
+                if(isset($_POST["newBookTitle"])) {
+
+                    if ($_POST["newBookTitle"] != "Enter book title" && ($newTitle = trim(strip_tags($_POST["newBookTitle"])))) {
+
+                        echo "<h2>Valid Title</h2>";
+
+                        // if the book title is valid, check to see if it exists
+                        //echo "The return value is: " . doesRecordExist("bookTitle", "bookstuff", $newTitle);
+                        if (!doesRecordExist("bookTitle", "bookstuff", $newTitle)) {
+
+                            // if the title is new check for valid author input
+                            if (!$newAuthor = trim(strip_tags($_POST['newAuthor']))) {
+                                $newAuthor = "Anonymous";
+                            }
+
+
+                            // if the author is valid, check to see if author exists
+                            if (!doesRecordExist("authorName", "authors", $newAuthor)) {
+
+                                require 'dbConnect.php';
+
+                                try {
+
+                                    $sql = "INSERT INTO authors SET authorName = :newAuthorName";
+                                    $statement = $pdo->prepare($sql);
+                                    $statement->bindValue(':newAuthorName', $newAuthor);
+                                    $statement->execute();
+                                    echo "<h2 style='color:gold'>New Author: $newAuthor has been added.</h2>\n";
+
+                                } catch (Exception $ex) {
+
+                                    $error = "Could not insert author: " . $ex->getMessage();
+                                    include 'error.html.php';;
+                                    exit();
+
+                                }
+
+                            }
+                            // if the author exists, using existing author
+
+                            // if the author does not exist, insert new author
+
+                        } else {
+
+                            echo "<h2 style='color:gold'>Title already exists</h2>\n";
+
+                        }
+
+
+                    } else {
+
+                        echo "<h2 style='color:gold'>Why you no enter valid title?</h2>\n";
+
+                    }
+                }
 
                 $categoryResults = getBookCategories(false);
 
