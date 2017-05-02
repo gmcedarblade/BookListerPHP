@@ -134,8 +134,43 @@ and open the template in the editor.
 
                             }
                             // if the author exists, using existing author
+                            require 'dbConnect.php';
 
+
+
+                            try {
+                                $sql = "SELECT id FROM authors WHERE authorName = '$newAuthor'";
+
+                                $authorID = $pdo->query($sql)->fetchColumn();
+
+                            } catch (Exception $ex) {
+                                $error = "Could not get author id: " . $ex->getMessage();
+                                include 'error.html.php';
+                                exit();
+                            }
                             // if the author does not exist, insert new author
+                            require 'dbConnect.php';
+
+                            try {
+
+                                $sql = "INSERT INTO bookstuff (bookTitle, catId, authorId) VALUES (:title, :catID, :authID)";
+                                $statement = $pdo->prepare($sql);
+                                $statement->bindValue(":title", $newTitle);
+                                $statement->bindValue(":catID", $_POST['bookCategory']);
+                                $statement->bindValue(":authID", $authorID);
+
+                                $statement->execute();
+
+                                echo "<h2 style=\"color:gold\">New Book: $newTitle has been added.</h2>\n";
+
+                            } catch (Exception $ex) {
+
+                                $error = "Could not insert new book: " . $ex->getMessage();
+                                include 'error.html.php';
+                                exit();
+
+                            }
+
 
                         } else {
 
